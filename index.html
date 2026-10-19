@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>GlassCall Pro - Secure Conference & Cast</title>
-  <!-- PeerJS Library -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     :root {
@@ -18,13 +16,10 @@
       --bd: rgba(255, 255, 255, 0.18);
       --ok: #10b981;
       --bad: #ef4444;
-      box-sizing: border-box;
+      --accent: #ec4899;
     }
-
-    * { box-sizing: border-box; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
       min-height: 100vh;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       color: var(--tx);
@@ -35,7 +30,6 @@
       align-items: center;
       padding: 12px;
     }
-
     .app {
       width: 100%;
       max-width: 480px;
@@ -43,7 +37,6 @@
       flex-direction: column;
       gap: 12px;
     }
-
     .glass {
       background: var(--gl);
       border: 1px solid var(--bd);
@@ -53,7 +46,6 @@
       -webkit-backdrop-filter: blur(24px) saturate(180%);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
     }
-
     h1 {
       margin: 4px 0;
       font-size: 22px;
@@ -62,13 +54,11 @@
       align-items: center;
       justify-content: space-between;
     }
-
     h2 { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
     .mut { color: var(--mut); font-size: 13px; }
-
     input {
       width: 100%;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.25);
       border: 1px solid var(--bd);
       border-radius: 14px;
       color: var(--tx);
@@ -77,12 +67,10 @@
       outline: none;
       transition: all 0.2s;
     }
-
     input:focus {
-      border-color: #ec4899;
+      border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.25);
     }
-
     button {
       border: 1px solid var(--bd);
       background: var(--gl);
@@ -95,102 +83,104 @@
       backdrop-filter: blur(10px);
       transition: transform 0.1s, background 0.2s;
     }
-
     button:active { transform: scale(0.96); }
     button:hover { background: rgba(255, 255, 255, 0.15); }
-
     .pri {
       background: linear-gradient(135deg, #8b5cf6, #ec4899);
       border: 0;
       color: #fff;
       box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
     }
-
     .row { display: flex; gap: 10px; }
     .row > * { flex: 1; }
     .hide { display: none !important; }
-
     .id {
-      font-size: 26px;
-      letter-spacing: 3px;
+      font-size: 28px;
+      letter-spacing: 4px;
       font-weight: 800;
       color: #f472b6;
-      margin-top: 4px;
+      margin: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
+    .copy-btn {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      background: rgba(236, 72, 153, 0.2);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+    }
     #stage {
       position: relative;
       min-height: 280px;
-      max-height: 360px;
+      max-height: 380px;
       border-radius: 20px;
       overflow-y: auto;
       background: #000;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 6px;
       padding: 6px;
     }
-
     .video-box {
       position: relative;
       width: 100%;
-      height: 150px;
+      height: 160px;
       background: #111;
       border-radius: 14px;
       overflow: hidden;
       border: 1px solid var(--bd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
     .video-box video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-
     .video-label {
       position: absolute;
       bottom: 6px;
       left: 6px;
-      background: rgba(0,0,0,0.6);
-      padding: 2px 8px;
+      background: rgba(0,0,0,0.65);
+      padding: 3px 9px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 500;
     }
-
-    #st {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      font-size: 12px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      padding: 5px 12px;
-      border-radius: 99px;
-      z-index: 10;
-      font-weight: 500;
+    .voice-avatar {
+      font-size: 64px;
+      user-select: none;
     }
-
+    .voice-name {
+      position: absolute;
+      bottom: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      background: rgba(0,0,0,0.5);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
     .ctl {
       display: flex;
       justify-content: center;
       gap: 8px;
       flex-wrap: wrap;
     }
-
     .ctl button {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       padding: 0;
-      font-size: 16px;
+      font-size: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-
     #msgs {
-      height: 75px;
+      height: 90px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -198,481 +188,454 @@
       margin-bottom: 8px;
       padding-right: 4px;
     }
-
     .m {
       max-width: 80%;
-      padding: 6px 10px;
-      border-radius: 12px;
+      padding: 7px 12px;
+      border-radius: 14px;
       background: var(--gl);
-      font-size: 12px;
+      font-size: 13px;
       word-break: break-word;
     }
-
-    .m.me { align-self: flex-end; background: rgba(139, 92, 246, 0.6); }
-
+    .m.me { align-self: flex-end; background: rgba(139, 92, 246, 0.55); }
+    .m.system {
+      align-self: center;
+      background: rgba(16, 185, 129, 0.25);
+      font-size: 12px;
+      color: #6ee7b7;
+      max-width: 95%;
+      text-align: center;
+    }
     #participantsList {
-      max-height: 100px;
+      max-height: 110px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     .participant-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(0,0,0,0.2);
-      padding: 5px 10px;
+      background: rgba(0,0,0,0.25);
+      padding: 6px 10px;
       border-radius: 10px;
       font-size: 12px;
     }
-
-    #modal, #settingsDrawer, #conferenceModal {
+    #modal, #settingsDrawer, #conferenceModal, #howto {
       position: fixed;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(10px);
       z-index: 40;
       padding: 20px;
     }
-
     #settingsDrawer {
       align-items: flex-end;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.45);
     }
-
     .drawer-content {
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(15, 23, 42, 0.97);
       border: 1px solid var(--bd);
       border-radius: 28px 28px 0 0;
       padding: 20px;
       width: 100%;
       max-width: 480px;
     }
-
     #toast {
       position: fixed;
       left: 50%;
-      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      bottom: calc(22px + env(safe-area-inset-bottom, 0px));
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.92);
       border: 1px solid var(--bd);
       backdrop-filter: blur(16px);
       color: #fff;
-      padding: 10px 18px;
+      padding: 11px 20px;
       border-radius: 99px;
       font-size: 13px;
-      z-index: 50;
+      z-index: 60;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      max-width: 90%;
+      text-align: center;
+    }
+    .howto-box {
+      max-width: 400px;
+      width: 100%;
+      text-align: left;
+    }
+    .howto-box ol {
+      padding-left: 18px;
+      margin: 12px 0;
+      line-height: 1.6;
+      color: var(--mut);
+      font-size: 14px;
+    }
+    .howto-box li { margin-bottom: 6px; }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      margin-right: 6px;
     }
   </style>
 </head>
-
 <body>
   <div class="app">
+    <!-- Header -->
     <div class="glass">
       <h1>
         <span>📡 GlassCall Pro</span>
         <button style="width:36px;height:36px;padding:0;border-radius:50%;font-size:14px" onclick="toggleSettings()" title="Settings">⚙️</button>
       </h1>
-      <div class="mut">Your Room Key / ID</div>
-      <div class="id" id="myid">Connecting...</div>
+      <div class="mut">Your Room Key</div>
+      <div class="id">
+        <span id="myid">......</span>
+        <button class="copy-btn" onclick="copyMyId()">Copy</button>
+      </div>
+      <div class="mut" style="font-size:12px;margin-top:2px">
+        <span class="status-dot" id="connDot"></span>
+        <span id="connStatus">Connecting...</span>
+      </div>
     </div>
 
-    <!-- Home / Call Modes -->
+    <!-- Home -->
     <div id="home" class="glass">
       <h2>1-to-1 Secure Call</h2>
-      <input id="targetId" placeholder="Enter friend's 6-digit key" type="number" style="margin-bottom:8px">
+      <input id="targetId" placeholder="Enter friend's 6-digit key" maxlength="6" inputmode="numeric" style="margin-bottom:10px">
       <div class="row">
-        <button class="pri" onclick="connectToPeer('voice')">📞 Voice Call</button>
-        <button class="pri" onclick="connectToPeer('video')">🎥 Video Call</button>
+        <button class="pri" onclick="startCall('voice')">📞 Voice Call</button>
+        <button class="pri" onclick="startCall('video')">🎥 Video Call</button>
       </div>
 
-      <h2 style="margin-top:16px">👥 Group Conference Room</h2>
-      <div class="row">
-        <button class="pri" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)" onclick="startConferenceRoom()">🚀 Start / Join Conference</button>
-      </div>
+      <h2 style="margin-top:18px">👥 Group Conference</h2>
+      <p class="mut" style="margin-bottom:10px;font-size:12px">Share your key with others or enter their key to join.</p>
+      <button class="pri" style="width:100%;background:linear-gradient(135deg,#0ea5e9,#2563eb)" onclick="startCall('video')">🚀 Start / Join Conference</button>
     </div>
 
-    <!-- Active Call / Conference Screen -->
+    <!-- Call Screen -->
     <div id="call" class="hide">
       <div style="font-weight:600;font-size:13px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-        <span>Active Call / Conference</span>
-        <span id="callTypeBadge" style="font-size:11px;background:#8b5cf6;padding:2px 8px;border-radius:6px">Live</span>
+        <span id="callTitle">Active Call</span>
+        <span id="callTypeBadge" style="font-size:11px;background:#8b5cf6;padding:3px 10px;border-radius:8px">Live</span>
       </div>
-      
+
       <div id="stage">
-        <div class="video-box" id="localBox">
-          <video id="lv" autoplay playsinline muted></video>
-          <div class="video-label">You</div>
-        </div>
+        <!-- Local video / avatar will be injected -->
       </div>
 
-      <!-- Participants Audio Control Panel -->
-      <div class="glass" style="margin-top:8px;padding:10px">
-        <h2 style="margin-bottom:4px;font-size:12px">Participants Mute Control</h2>
+      <div class="glass" style="margin-top:8px;padding:12px">
+        <h2 style="margin-bottom:6px;font-size:13px">Participants</h2>
         <div id="participantsList">
-          <div class="mut" style="font-size:11px">No other participants yet.</div>
+          <div class="mut" style="font-size:11px">Waiting for others...</div>
         </div>
       </div>
 
-      <!-- Control Bar with "+" Button Inside -->
       <div class="glass ctl" style="margin-top:8px">
-        <button id="bm" onclick="tAudio()" title="Toggle Mic">🎙️</button>
-        <button id="bc" onclick="tCam()" title="Toggle Camera">📷</button>
-        <button onclick="openConferenceModal()" title="Add Participant (+) " style="background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff">➕</button>
-        <button onclick="tScr()" title="Screen Share">🖥️</button>
-        <button style="background:var(--bad)" onclick="endCall()" title="End Call">📵</button>
+        <button id="bm" onclick="toggleMic()" title="Mic">🎙️</button>
+        <button id="bc" onclick="toggleCam()" title="Camera">📷</button>
+        <button onclick="openAddModal()" title="Add Participant" style="background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff">➕</button>
+        <button id="bs" onclick="toggleScreen()" title="Screen Share">🖥️</button>
+        <button style="background:var(--bad)" onclick="endCall()" title="End">📵</button>
       </div>
 
       <div class="glass" style="margin-top:8px">
         <div id="msgs"></div>
         <div class="row">
-          <input id="ci" placeholder="Type a message...">
-          <button style="flex:0 0 60px" class="pri" onclick="sendMsg()">➤</button>
+          <input id="ci" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <button style="flex:0 0 58px" class="pri" onclick="sendMsg()">➤</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- How to Use (first screen) -->
+  <div id="howto">
+    <div class="glass howto-box">
+      <h2 style="text-align:center;font-size:20px;margin-bottom:4px">📡 GlassCall Pro</h2>
+      <p class="mut" style="text-align:center;margin-bottom:14px">Secure peer-to-peer calls • No account needed</p>
+      
+      <h2 style="font-size:14px">How to use:</h2>
+      <ol>
+        <li>Your <b>6-digit Room Key</b> is shown on the top. Share it with your friend.</li>
+        <li>Friend opens the same page and enters <b>your key</b> (or you enter their key).</li>
+        <li>Choose <b>Voice Call</b> or <b>Video Call</b>.</li>
+        <li>When someone calls you, Accept or Decline.</li>
+        <li>During call you can:
+          <ul style="margin-top:4px">
+            <li>Mute / Unmute mic</li>
+            <li>Turn camera on/off (video calls)</li>
+            <li>Add more people with ➕</li>
+            <li>Share your screen</li>
+            <li>Chat at the bottom</li>
+          </ul>
+        </li>
+      </ol>
+      <p class="mut" style="font-size:12px;margin-top:10px">Tip: Both people must keep this page open. Best on Chrome or Firefox.</p>
+      <button class="pri" style="width:100%;margin-top:16px" onclick="closeHowto()">Got it — Start</button>
     </div>
   </div>
 
   <!-- Incoming Call Modal -->
   <div id="modal" class="hide">
     <div class="glass" style="text-align:center;width:100%;max-width:340px">
-      <div style="font-size:40px">📞</div>
+      <div style="font-size:48px" id="incomingIcon">📞</div>
       <h2 id="who" style="margin-top:8px">Incoming Call</h2>
-      <div class="mut">Someone is calling your room...</div>
-      <div class="row" style="margin-top:16px">
+      <div class="mut" id="incomingType">Someone is calling...</div>
+      <div class="row" style="margin-top:18px">
         <button style="background:var(--bad)" onclick="declineCall()">❌ Decline</button>
         <button style="background:var(--ok);color:#fff" onclick="acceptCall()">✅ Answer</button>
       </div>
     </div>
   </div>
 
-  <!-- Conference Add Modal (+) -->
+  <!-- Add Participant Modal -->
   <div id="conferenceModal" class="hide">
     <div class="glass" style="width:100%;max-width:340px">
       <h2>➕ Add Participant</h2>
-      <div class="mut" style="margin-bottom:10px">Enter another user's 6-digit key to bring them into this call/conference.</div>
-      <input id="confTargetId" placeholder="Enter 6-digit Key" type="number" style="margin-bottom:10px">
+      <div class="mut" style="margin-bottom:12px">Enter another user's 6-digit key to bring them into this call.</div>
+      <input id="confTargetId" placeholder="6-digit Key" maxlength="6" inputmode="numeric" style="margin-bottom:12px">
       <div class="row">
         <button onclick="$('conferenceModal').classList.add('hide')">Cancel</button>
-        <button class="pri" onclick="addParticipantToCall()">Connect</button>
+        <button class="pri" onclick="addParticipant()">Connect</button>
       </div>
     </div>
   </div>
 
-  <!-- Settings Drawer -->
-  <div id="settingsDrawer" class="hide" onclick="if(event.target === this) toggleSettings()">
+  <!-- Settings -->
+  <div id="settingsDrawer" class="hide" onclick="if(event.target===this)toggleSettings()">
     <div class="drawer-content glass">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <h2 style="margin:0">⚙️ Settings & Diagnostics</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="margin:0">⚙️ Settings</h2>
         <button style="padding:6px 12px;font-size:12px" onclick="toggleSettings()">Close</button>
       </div>
-      <div class="mut" style="margin-bottom:12px">Hardware permission check.</div>
-      <button style="width:100%;margin-bottom:8px" onclick="checkPermission('microphone')">🎙️ Check Microphone Permission</button>
-      <button style="width:100%;margin-bottom:8px" onclick="checkPermission('camera')">📷 Check Camera Permission</button>
+      <button style="width:100%;margin-bottom:8px" onclick="checkPermission('microphone')">🎙️ Check Microphone</button>
+      <button style="width:100%;margin-bottom:8px" onclick="checkPermission('camera')">📷 Check Camera</button>
+      <button style="width:100%;margin-bottom:8px" onclick="copyMyId()">📋 Copy My Room Key</button>
     </div>
   </div>
 
   <script>
-    const $ = i => document.getElementById(i);
-    let peer, localStream = null;
-    let activeCalls = {}; 
-    let dataConns = {};  
-    let incomingCallObj = null;
-    let micMuted = false, camOff = false;
-    let currentCallType = 'video';
+    const $ = id => document.getElementById(id);
 
+    // ============ STATE ============
+    let peer = null;
+    let localStream = null;
+    let originalVideoTrack = null;
+    let activeCalls = {};      // peerId -> MediaConnection
+    let dataConns = {};        // peerId -> DataConnection
+    let incomingCall = null;
+    let micMuted = false;
+    let camOff = false;
+    let isScreenSharing = false;
+    let currentCallType = 'video'; // 'voice' | 'video'
     let myShortId = localStorage.getItem('gc_short_id');
+
     if (!myShortId || myShortId.length !== 6) {
       myShortId = String(Math.floor(100000 + Math.random() * 900000));
       localStorage.setItem('gc_short_id', myShortId);
     }
-    $('myid').textContent = myShortId.slice(0, 3) + ' ' + myShortId.slice(3);
+    $('myid').textContent = myShortId;
 
+    // ============ INIT PEER ============
     function initPeer() {
       peer = new Peer('gc-' + myShortId, {
+        debug: 1,
         config: {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' }
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun.cloudflare.com:3478' }
           ]
         }
       });
 
-      peer.on('open', (id) => {
-        toast('Connected to Server!');
+      peer.on('open', () => {
+        $('connStatus').textContent = 'Ready';
+        $('connDot').style.background = '#10b981';
+        toast('Connected! Your key: ' + myShortId);
       });
 
       peer.on('call', (call) => {
-        incomingCallObj = call;
-        $('who').textContent = 'Call from: ' + call.peer.replace('gc-', '');$('modal').classList.remove('hide');
+        incomingCall = call;
+        const type = (call.metadata && call.metadata.type) || 'video';
+        const from = call.peer.replace('gc-', '');
+        $('who').textContent = 'Call from ' + from;
+        $('incomingType').textContent = type === 'voice' ? 'Voice Call' : 'Video Call';
+        $('incomingIcon').textContent = type === 'voice' ? '📞' : '🎥';
+        $('modal').classList.remove('hide');
       });
 
       peer.on('connection', (conn) => {
-        dataConns[conn.peer] = conn;
-        setupDataConnection(conn);
+        setupDataConn(conn);
       });
 
       peer.on('error', (err) => {
-        toast('Connection Error: ' + err.type);
+        console.error(err);
+        toast('Error: ' + (err.type || err.message));
+        if (err.type === 'peer-unavailable') {
+          toast('User not found or offline');
+        }
+      });
+
+      peer.on('disconnected', () => {
+        $('connStatus').textContent = 'Reconnecting...';
+        $('connDot').style.background = '#f59e0b';
+        setTimeout(() => { if (peer && !peer.destroyed) peer.reconnect(); }, 2000);
       });
     }
 
     initPeer();
 
-    function toast(t) {
-      const existing = document.getElementById('toast');
-      if (existing) existing.remove();
+    // ============ HELPERS ============
+    function toast(msg) {
+      const old = document.getElementById('toast');
+      if (old) old.remove();
       const d = document.createElement('div');
       d.id = 'toast';
-      d.textContent = t;
+      d.textContent = msg;
       document.body.appendChild(d);
-      setTimeout(() => d.remove(), 4000);
+      setTimeout(() => d.remove(), 3800);
+    }
+
+    function closeHowto() {
+      $('howto').classList.add('hide');
     }
 
     function toggleSettings() {
       $('settingsDrawer').classList.toggle('hide');
     }
 
-    function openConferenceModal() {
+    function openAddModal() {
+      $('confTargetId').value = '';
       $('conferenceModal').classList.remove('hide');
+    }
+
+    function copyMyId() {
+      navigator.clipboard.writeText(myShortId).then(() => {
+        toast('Room key copied: ' + myShortId);
+      }).catch(() => {
+        // fallback
+        const t = document.createElement('textarea');
+        t.value = myShortId;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        t.remove();
+        toast('Room key copied: ' + myShortId);
+      });
     }
 
     async function checkPermission(type) {
       try {
-        const s = await navigator.mediaDevices.getUserMedia(type === 'camera' ? { video: true } : { audio: true });
+        const s = await navigator.mediaDevices.getUserMedia(
+          type === 'camera' ? { video: true } : { audio: true }
+        );
         s.getTracks().forEach(t => t.stop());
-        toast(type.toUpperCase() + ' permission granted!');
+        toast(type.toUpperCase() + ' permission granted ✓');
       } catch (e) {
-        toast(type.toUpperCase() + ' permission denied.');
+        toast(type.toUpperCase() + ' permission denied');
       }
     }
 
+    // ============ MEDIA ============
     async function getMedia(type) {
       currentCallType = type;
       try {
+        // Stop old stream if any
+        if (localStream) {
+          localStream.getTracks().forEach(t => t.stop());
+        }
+
         const constraints = {
-          audio: { echoCancellation: true, noiseSuppression: true },
-          video: type === 'video' ? { facingMode: 'user' } : false
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          },
+          video: type === 'video' ? {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          } : false
         };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        localStream = stream;
-        $('lv').srcObject = stream;
-        $('lv').play().catch(()=>{});
-        return stream;
+
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        // Save original video track for screen-share restore
+        const vTrack = localStream.getVideoTracks()[0];
+        if (vTrack) originalVideoTrack = vTrack;
+
+        return localStream;
       } catch (e) {
-        toast('Camera or Microphone access error.');
+        console.error(e);
+        toast('Could not access mic/camera. Please allow permissions.');
         return null;
       }
     }
 
-    async function connectToPeer(type) {
+    // ============ CALL FLOW ============
+    async function startCall(type) {
       const target = $('targetId').value.trim();
-      if (!target || target.length !== 6) return toast('Please enter a valid 6-digit key!');
-      
+      if (!target || target.length !== 6) {
+        return toast('Please enter a valid 6-digit key');
+      }
+      if (target === myShortId) {
+        return toast('You cannot call yourself');
+      }
+
       const stream = await getMedia(type);
       if (!stream) return;
 
-      const remotePeerId = 'gc-' + target;
-      
-      const conn = peer.connect(remotePeerId);
-      dataConns[remotePeerId] = conn;
-      setupDataConnection(conn);
+      const remoteId = 'gc-' + target;
 
-      const call = peer.call(remotePeerId, stream);
-      handleCallConnection(call);
-      
-      showCallScreen();
-    }
+      // Data connection first (for chat + signals)
+      const conn = peer.connect(remoteId, { reliable: true });
+      setupDataConn(conn);
 
-    async function addParticipantToCall() {
-      const target = $('confTargetId').value.trim();$('conferenceModal').classList.add('hide');
-      if (!target || target.length !== 6) return toast('Invalid 6-digit key!');
+      // Media call with metadata
+      const call = peer.call(remoteId, stream, {
+        metadata: { type: type }
+      });
+      handleCall(call);
 
-      const stream = await getMedia(currentCallType);
-      if (!stream) return;
-
-      const remotePeerId = 'gc-' + target;
-      const call = peer.call(remotePeerId, stream);
-      handleCallConnection(call);
-
-      const conn = peer.connect(remotePeerId);
-      dataConns[remotePeerId] = conn;
-      setupDataConnection(conn);
-
-      toast('Connecting participant...');
-      showCallScreen();
-    }
-
-    async function startConferenceRoom() {
-      const target = prompt('Enter peer key to join conference, or share your key (' + myShortId + ') with others:');
-      if (!target) return;
-      $('targetId').value = target.trim();
-      connectToPeer('video');
+      showCallUI(type);
     }
 
     async function acceptCall() {
       $('modal').classList.add('hide');
-      if (!incomingCallObj) return;
+      if (!incomingCall) return;
 
-      const stream = await getMedia('video');
-      if (!stream) return;
+      const type = (incomingCall.metadata && incomingCall.metadata.type) || 'video';
+      const stream = await getMedia(type);
+      if (!stream) {
+        incomingCall.close();
+        incomingCall = null;
+        return;
+      }
 
-      incomingCallObj.answer(stream);
-      handleCallConnection(incomingCallObj);
-      showCallScreen();
+      incomingCall.answer(stream);
+      handleCall(incomingCall);
+      incomingCall = null;
+
+      showCallUI(type);
     }
 
     function declineCall() {
       $('modal').classList.add('hide');
-      incomingCallObj = null;
-    }
-
-    function handleCallConnection(call) {
-      activeCalls[call.peer] = call;
-
-      call.on('stream', (remoteStream) => {
-        addRemoteVideo(call.peer, remoteStream);
-        updateParticipantsList();
-      });
-
-      call.on('close', () => {
-        removeRemoteVideo(call.peer);
-        delete activeCalls[call.peer];
-        updateParticipantsList();
-      });
-    }
-
-    function setupDataConnection(conn) {
-      dataConns[conn.peer] = conn;
-      conn.on('data', (data) => {
-        addMsg(data, 0);
-      });
-    }
-
-    function addRemoteVideo(peerId, stream) {
-      let boxId = 'vid-box-' + peerId;
-      if ($(boxId)) return;
-
-      const stage = $('stage');
-      const box = document.createElement('div');
-      box.className = 'video-box';
-      box.id = boxId;
-
-      const video = document.createElement('video');
-      video.autoplay = true;
-      video.playsInline = true;
-      video.srcObject = stream;
-      video.play().catch(()=>{});
-
-      const label = document.createElement('div');
-      label.className = 'video-label';
-      label.textContent = peerId.replace('gc-', '');
-
-      box.appendChild(video);
-      box.appendChild(label);
-      stage.appendChild(box);
-    }
-
-    function removeRemoteVideo(peerId) {
-      let boxId = 'vid-box-' + peerId;
-      if ($(boxId))$(boxId).remove();
-    }
-
-    function updateParticipantsList() {
-      const list = $('participantsList');
-      list.innerHTML = '';
-      const peers = Object.keys(activeCalls);
-      if (peers.length === 0) {
-        list.innerHTML = '<div class="mut" style="font-size:11px">No other participants connected yet.</div>';
-        return;
-      }
-
-      peers.forEach(peerId => {
-        const shortId = peerId.replace('gc-', '');
-        const item = document.createElement('div');
-        item.className = 'participant-item';
-        item.innerHTML = `<span>User: ${shortId}</span> <button style="padding:3px 6px;font-size:10px;background:var(--bad)" onclick="muteParticipant('${peerId}')">Mute Audio</button>`;
-        list.appendChild(item);
-      });
-    }
-
-    function muteParticipant(peerId) {
-      const boxId = 'vid-box-' + peerId;
-      const vidBox = $(boxId);
-      if (vidBox) {
-        const vid = vidBox.querySelector('video');
-        if (vid) {
-          vid.muted = !vid.muted;
-          toast('Toggled audio mute for ' + peerId.replace('gc-', ''));
-        }
+      if (incomingCall) {
+        incomingCall.close();
+        incomingCall = null;
       }
     }
 
-    function showCallScreen() {
-      ['home', 'modal'].forEach(x => $(x).classList.add('hide'));$('call').classList.remove('hide');
-    }
-
-    function addMsg(t, isMe) {
-      const d = document.createElement('div');
-      d.className = 'm' + (isMe ? ' me' : '');
-      d.textContent = t;
-      $('msgs').appendChild(d);$('msgs').scrollTop = 1e9;
-    }
-
-    function sendMsg() {
-      const v = $('ci').value.trim();
-      if (!v) return;
-      addMsg(v, 1);
-      
-      Object.values(dataConns).forEach(conn => {
-        try {
-          if (conn && conn.open) {
-            conn.send(v);
-          }
-        } catch(e){}
-      });
-      $('ci').value = '';
-    }
-
-    function tAudio() {
-      if (!localStream) return;
-      const track = localStream.getAudioTracks()[0];
-      if (track) {
-        micMuted = !micMuted;
-        track.enabled = !micMuted;
-        $('bm').textContent = micMuted ? '🔇' : '🎙️';
-        toast(micMuted ? 'Mic Muted' : 'Mic Active');
-      }
-    }
-
-    function tCam() {
-      if (!localStream) return;
-      const track = localStream.getVideoTracks()[0];
-      if (track) {
-        camOff = !camOff;
-        track.enabled = !camOff;
-        $('bc').textContent = camOff ? '🚫' : '📷';
-        toast(camOff ? 'Camera Paused' : 'Camera Active');
-      }
-    }
-
-    async function tScr() {
-      if (!navigator.mediaDevices.getDisplayMedia) return toast('Screen sharing not supported.');
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        const screenTrack = stream.getVideoTracks()[0];
-        
-        Object.values(activeCalls).forEach(call => {
-          const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-          if (sender) sender.replaceTrack(screenTrack);
-        });
-
-        toast('Screen sharing started 🖥️');
-        sc
+    async function addParticipant() {
+      const target = $('confTargetId').value.trim();
+      $('conferenceModal').classList.add('hide');
+      if (!target || target.length !== 6) return toast('Invalid key');
+      if (target === myShortId) return toast('Cannot ad
