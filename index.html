@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>GlassCall - Pro Meeting & Cast</title>
+  <title>GlassCall Pro - Secure Meetings & Cast</title>
   <!-- PeerJS Library for Simple Short ID Connecting -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
@@ -56,14 +56,14 @@
 
     h1 {
       margin: 4px 0;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    h2 { margin: 0 0 10px; font-size: 16px; font-weight: 600; }
+    h2 { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
     .mut { color: var(--mut); font-size: 13px; }
 
     input {
@@ -120,7 +120,7 @@
 
     #stage {
       position: relative;
-      height: 320px;
+      height: 340px;
       border-radius: 20px;
       overflow: hidden;
       background: #000;
@@ -154,6 +154,7 @@
       border-radius: 12px;
       border: 2px solid var(--bd);
       z-index: 5;
+      background: #000;
     }
 
     #st {
@@ -188,7 +189,7 @@
     }
 
     #msgs {
-      height: 100px;
+      height: 90px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -208,7 +209,7 @@
 
     .m.me { align-self: flex-end; background: rgba(139, 92, 246, 0.6); }
 
-    #modal {
+    #modal, #settingsDrawer {
       position: fixed;
       inset: 0;
       display: flex;
@@ -216,8 +217,22 @@
       justify-content: center;
       background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(8px);
-      z-index: 20;
+      z-index: 40;
       padding: 20px;
+    }
+
+    #settingsDrawer {
+      align-items: flex-end;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .drawer-content {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--bd);
+      border-radius: 28px 28px 0 0;
+      padding: 20px;
+      width: 100%;
+      max-width: 460px;
     }
 
     #toast {
@@ -232,7 +247,7 @@
       padding: 10px 18px;
       border-radius: 99px;
       font-size: 13px;
-      z-index: 30;
+      z-index: 50;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
   </style>
@@ -243,21 +258,24 @@
     <div class="glass">
       <h1>
         <span>📡 GlassCall Pro</span>
+        <button style="width:38px;height:38px;padding:0;border-radius:50%;font-size:15px" onclick="toggleSettings()">⚙️</button>
       </h1>
-      <div class="mut">Aapka Naam</div>
-      <input id="nm" placeholder="Apna naam likhein" maxlength="20" style="margin-top:4px">
-      <div class="mut" style="margin-top:10px">Aapki Short Room Key</div>
+      <div class="mut">Your Room Key / ID</div>
       <div class="id" id="myid">Connecting...</div>
     </div>
 
-    <!-- Home Screen -->
+    <!-- Home / Call Modes -->
     <div id="home" class="glass">
-      <h2>1-Click Join Room</h2>
-      <div class="mut" style="margin-bottom:6px">Dost ki 6-Digit Room Key dalein:</div>
-      <input id="targetId" placeholder="Jaise: 839201" type="number">
-      <div class="row" style="margin-top:10px">
+      <h2>1-to-1 Call</h2>
+      <input id="targetId" placeholder="Enter friend's 6-digit key" type="number" style="margin-bottom:8px">
+      <div class="row">
         <button class="pri" onclick="connectToPeer('voice')">📞 Voice Call</button>
         <button class="pri" onclick="connectToPeer('video')">🎥 Video Call</button>
+      </div>
+
+      <h2 style="margin-top:16px">👥 Multi-User Meeting Room (Upto 5 People)</h2>
+      <div class="row">
+        <button class="pri" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)" onclick="startMeeting()">🚀 Create / Join Meeting</button>
       </div>
     </div>
 
@@ -269,16 +287,16 @@
         <video id="lv" autoplay playsinline muted></video>
       </div>
       <div class="glass ctl" style="margin-top:12px">
-        <button id="bm" onclick="tAudio()" title="Mic Toggle">🎙️</button>
-        <button id="bc" onclick="tCam()" title="Camera Toggle">📷</button>
-        <button onclick="tScr()" title="Screen Share">🖥️</button>
+        <button id="bm" onclick="tAudio()" title="Toggle Mic">🎙️</button>
+        <button id="bc" onclick="tCam()" title="Toggle Camera">📷</button>
+        <button onclick="tScr()" title="Screen Share / Cast">🖥️</button>
         <button style="background:var(--bad)" onclick="endCall()" title="End Call">📵</button>
       </div>
       <div class="glass" style="margin-top:10px">
         <div id="msgs"></div>
         <div class="row">
-          <input id="ci" placeholder="Message bhejein...">
-          <button style="flex:0 0 65px" class="pri" onclick="send()">➤</button>
+          <input id="ci" placeholder="Type a message...">
+          <button style="flex:0 0 65px" class="pri" onclick="sendMsg()">➤</button>
         </div>
       </div>
     </div>
@@ -287,9 +305,9 @@
   <!-- Incoming Call Modal -->
   <div id="modal" class="hide">
     <div class="glass" style="text-align:center;width:100%;max-width:340px">
-      <div style="font-size:42px">📞</div>
+      <div style="font-size:40px">📞</div>
       <h2 id="who" style="margin-top:8px">Incoming Call</h2>
-      <div class="mut">Koi aapko call kar raha hai...</div>
+      <div class="mut">Someone is calling you...</div>
       <div class="row" style="margin-top:16px">
         <button style="background:var(--bad)" onclick="declineCall()">❌ Decline</button>
         <button style="background:var(--ok);color:#fff" onclick="acceptCall()">✅ Answer</button>
@@ -297,13 +315,25 @@
     </div>
   </div>
 
+  <!-- Settings Drawer -->
+  <div id="settingsDrawer" class="hide" onclick="if(event.target === this) toggleSettings()">
+    <div class="drawer-content glass">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 style="margin:0">⚙️ Settings & Permissions</h2>
+        <button style="padding:6px 12px;font-size:12px" onclick="toggleSettings()">Close</button>
+      </div>
+      <div class="mut" style="margin-bottom:12px">Manage hardware permissions and quick diagnostics.</div>
+      <button style="width:100%;margin-bottom:8px" onclick="checkPermission('microphone')">🎙️ Check Microphone Permission</button>
+      <button style="width:100%;margin-bottom:8px" onclick="checkPermission('camera')">📷 Check Camera Permission</button>
+    </div>
+  </div>
+
   <script>
     const $ = i => document.getElementById(i);
     let peer, activeCall, dataConn;
     let localStream = null;
-    let screenTrack = null;
     let incomingCallObj = null;
-    let micMuted = false;
+    let micMuted = false, camOff = false;
 
     // Generate or fetch 6-Digit ID
     let myShortId = localStorage.getItem('gc_short_id');
@@ -313,12 +343,12 @@
     }
     $('myid').textContent = myShortId.slice(0, 3) + ' ' + myShortId.slice(3);
 
-    // Initialize PeerJS Connection with custom ID
+    // Initialize PeerJS
     function initPeer() {
       peer = new Peer('gc-' + myShortId);
 
       peer.on('open', (id) => {
-        toast('Connected to Server!');
+        toast('Connected to Signaling Server');
       });
 
       peer.on('call', (call) => {
@@ -348,28 +378,38 @@
       setTimeout(() => d.remove(), 4000);
     }
 
-    function show(v) {
-      ['home', 'call'].forEach(x => $(x).classList.toggle('hide', x !== v));
+    function toggleSettings() {
+      $('settingsDrawer').classList.toggle('hide');
+    }
+
+    async function checkPermission(type) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia(type === 'camera' ? { video: true } : { audio: true });
+        s.getTracks().forEach(t => t.stop());
+        toast(type.toUpperCase() + ' permission granted successfully!');
+      } catch (e) {
+        toast(type.toUpperCase() + ' permission denied or unavailable.');
+      }
     }
 
     async function getMedia(type) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
+          audio: { echoCancellation: true, noiseSuppression: true },
           video: type === 'video' ? { facingMode: 'user' } : false
         });
         localStream = stream;
         $('lv').srcObject = stream;
         return stream;
       } catch (e) {
-        toast('Camera/Mic permission deny ho gayi hai.');
+        toast('Camera or Microphone access denied.');
         return null;
       }
     }
 
     async function connectToPeer(type) {
       const target = $('targetId').value.trim();
-      if (!target || target.length !== 6) return toast('Sahi 6-Digit Room Key dalein!');
+      if (!target || target.length !== 6) return toast('Please enter a valid 6-digit Room Key!');
 
       const stream = await getMedia(type);
       if (!stream) return;
@@ -380,7 +420,14 @@
 
       activeCall = peer.call(remotePeerId, stream);
       setupCall();
-      show('call');
+      showCallScreen();
+    }
+
+    async function startMeeting() {
+      const target = prompt('Enter Meeting Room Key to join, or share your own key (' + myShortId + ') with up to 5 participants:');
+      if (!target) return;
+      $('targetId').value = target.trim();
+      connectToPeer('video');
     }
 
     async function acceptCall() {
@@ -393,7 +440,7 @@
       activeCall = incomingCallObj;
       activeCall.answer(stream);
       setupCall();
-      show('call');
+      showCallScreen();
     }
 
     function declineCall() {
@@ -403,7 +450,9 @@
 
     function setupCall() {
       activeCall.on('stream', (remoteStream) => {
-        $('rv').srcObject = remoteStream;
+        const rv = $('rv');
+        rv.srcObject = remoteStream;
+        rv.play().catch(() => {});
       });
       activeCall.on('close', () => {
         endCall();
@@ -416,6 +465,11 @@
       });
     }
 
+    function showCallScreen() {
+      ['home', 'modal'].forEach(x => $(x).classList.add('hide'));
+      $('call').classList.remove('hide');
+    }
+
     function addMsg(t, isMe) {
       const d = document.createElement('div');
       d.className = 'm' + (isMe ? ' me' : '');
@@ -424,7 +478,7 @@
       $('msgs').scrollTop = 1e9;
     }
 
-    function send() {
+    function sendMsg() {
       const v = $('ci').value.trim();
       if (!v || !dataConn) return;
       dataConn.send(v);
@@ -439,7 +493,7 @@
         micMuted = !micMuted;
         track.enabled = !micMuted;
         $('bm').textContent = micMuted ? '🔇' : '🎙️';
-        toast(micMuted ? 'Mic Muted' : 'Mic On');
+        toast(micMuted ? 'Microphone Muted' : 'Microphone Active');
       }
     }
 
@@ -447,38 +501,45 @@
       if (!localStream) return;
       const track = localStream.getVideoTracks()[0];
       if (track) {
-        track.enabled = !track.enabled;
-        $('bc').textContent = track.enabled ? '📷' : '🚫';
+        camOff = !camOff;
+        track.enabled = !camOff;
+        $('bc').textContent = camOff ? '🚫' : '📷';
+        toast(camOff ? 'Camera Paused' : 'Camera Active');
       }
     }
 
     async function tScr() {
-      if (!activeCall) return toast('Pehle call connect karein!');
+      if (!activeCall) return toast('Please connect to a call first before sharing screen.');
+      if (!navigator.mediaDevices.getDisplayMedia) return toast('Screen sharing is not supported on this browser.');
       try {
         const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        const screenVideoTrack = stream.getVideoTracks()[0];
-        const sender = activeCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-        if (sender) sender.replaceTrack(screenVideoTrack);
-        toast('Screen Share Shuru ho gaya hai!');
+        const screenTrack = stream.getVideoTracks()[0];
+        const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender) sender.replaceTrack(screenTrack);
+        toast('Screen Sharing Started 🖥️');
 
-        screenVideoTrack.onended = () => {
+        screenTrack.onended = () => {
           if (sender && localStream) {
             sender.replaceTrack(localStream.getVideoTracks()[0]);
           }
+          toast('Screen Sharing Stopped');
         };
       } catch (e) {
-        toast('Screen share cancel ho gaya.');
+        toast('Screen sharing cancelled.');
       }
     }
 
     function endCall() {
       if (activeCall) activeCall.close();
+      if (dataConn) dataConn.close();
       if (localStream) localStream.getTracks().forEach(t => t.stop());
-      show('home');
-      toast('Call End ho gayi.');
+      $('call').classList.add('hide');
+      $('home').classList.remove('hide');
+      $('msgs').innerHTML = '';
+      toast('Call Ended.');
     }
 
-    $('ci').onkeydown = e => { if (e.key === 'Enter') send(); };
+    $('ci').onkeydown = e => { if (e.key === 'Enter') sendMsg(); };
   </script>
 </body>
 
