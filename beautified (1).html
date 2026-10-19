@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>GlassCall - Pro Meeting & Cast</title>
+    <style>
+    :root {
+      --bg1: #090d16;
+      --bg2: #1e1b4b;
+      --bg3: #311042;
+      --tx: #f8fafc;
+      --mut: rgba(248, 250, 252, 0.7);
+      --gl: rgba(255, 255, 255, 0.08);
+      --bd: rgba(255, 255, 255, 0.18);
+      --ok: #10b981;
+      --bad: #ef4444;
+      box-sizing: border-box;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--tx);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2) 50%, var(--bg3));
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      filter: blur(120px);
+      opacity: 0.3;
+      top: -100px;
+      left: -100px;
+      z-index: -1;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .glass {
+      background: var(--gl);
+      border: 1px solid var(--bd);
+      border-radius: 24px;
+      padding: 18px;
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      margin: 4px 0;
+      font-size: 24px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .mut {
+      color: var(--mut);
+      font-size: 13px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--bd);
+      border-radius: 14px;
+      color: var(--tx);
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #ec4899;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.25);
+    }
+
+    textarea {
+      height: 75px;
+      resize: none;
+      font-size: 11px;
+      word-break: break-all;
+    }
+
+    button {
+      border: 1px solid var(--bd);
+      background: var(--gl);
+      color: var(--tx);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .pri {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      border: 0;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row>* {
+      flex: 1;
+    }
+
+    .hide {
+      display: none !important;
+    }
+
+    .id {
+      font-size: 24px;
+      letter-spacing: 2px;
+      font-weight: 700;
+      color: #f472b6;
+      margin-top: 4px;
+    }
+
+    #stage {
+      position: relative;
+      height: 300px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #000;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 4px;
+      padding: 4px;
+    }
+
+    .video-box {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #111;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .video-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #st {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 5px 12px;
+      border-radius: 99px;
+      z-index: 10;
+      font-weight: 500;
+    }
+
+    .ctl {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ctl button {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      padding: 0;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #msgs {
+      height: 100px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding-right: 4px;
+    }
+
+    .m {
+      max-width: 80%;
+      padding: 7px 11px;
+      border-radius: 12px;
+      background: var(--gl);
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    .m.me {
+      align-self: flex-end;
+      background: rgba(139, 92, 246, 0.6);
+    }
+
+    #modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 20;
+      padding: 20px;
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--bd);
+      backdrop-filter: blur(16px);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 99px;
+      font-size: 13px;
+      z-index: 30;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Bottom Settings Panel */
+    #settingsDrawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(25px);
+      border-top: 1px solid var(--bd);
+      border-radius: 28px 28px 0 0;
+      padding: 20px;
+      z-index: 40;
+      transition: transform 0.3s ease;
+    }
+
+    #settingsDrawer.hide {
+      transform: translateY(100%);
+    }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <div class="glass">
+        <h1>
+          <span>📡 GlassCall Pro</span>
+          <button style="width:40px;height:40px;padding:0;border-radius:50%;font-size:16px" onclick="toggleSettings()">⚙️</button>
+        </h1>
+        <div class="mut">Aapka Naam</div>
+        <input id="nm" placeholder="Apna naam likhein" maxlength="20" style="margin-top:4px">
+        <div class="mut" style="margin-top:10px">Aapki ID / Room Key</div>
+        <div class="id" id="myid">--- ---</div>
+      </div>
+
+      <!-- Home / Call Modes -->
+      <div id="home" class="glass">
+        <h2>1-to-1 ya Meeting Shuru Karein</h2>
+        <div class="row">
+          <button class="pri" onclick="start('voice')">📞 Voice Call</button>
+          <button class="pri" onclick="start('video')">🎥 Video Call</button>
+        </div>
+
+        <h2 style="margin-top:16px">👥 Multi-User Meeting (Upto 5 People)</h2>
+        <div class="row">
+          <button class="pri" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)" onclick="startMeeting()">🚀 Meeting Room Banayein</button>
+        </div>
+
+        <h2 style="margin-top:16px">Incoming Call / Join Meeting</h2>
+        <textarea id="inCode" placeholder="Dost ya Meeting ka code yahan paste karein"></textarea>
+        <div class="row" style="margin-top:8px">
+          <button onclick="pasteTo('inCode')">📋 Paste</button>
+          <button class="pri" onclick="incoming()">Join / Connect</button>
+        </div>
+      </div>
+
+      <!-- Pair / Code Exchange Screen -->
+      <div id="pair" class="glass hide">
+        <h2 id="ptitle"></h2>
+        <textarea id="outCode" readonly></textarea>
+        <div class="row" style="margin-top:8px">
+          <button id="shb" onclick="share()">📤 Share / Copy</button>
+          <button onclick="cancel()">✖ Cancel</button>
+        </div>
+        <div id="ansBox">
+          <h2 style="margin-top:14px">Step 2: Reply Code Yahan Dalein</h2>
+          <textarea id="ansIn" placeholder="Reply code paste karein"></textarea>
+          <div class="row" style="margin-top:8px">
+            <button onclick="pasteTo('ansIn')">📋 Paste</button>
+            <button class="pri" onclick="connect()">🔗 Connect Karein</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Call / Meeting Screen -->
+      <div id="call" class="hide">
+        <div id="stage">
+          <div id="st">Connected</div>
+          <div class="video-box"><video id="rv" autoplay playsinline></video></div>
+          <div class="video-box"><video id="lv" autoplay playsinline muted></video></div>
+        </div>
+        <div class="glass ctl" style="margin-top:12px">
+          <!-- Unified Mic + Speaker Button -->
+          <button id="bm" onclick="tAudio()" title="Mic & Speaker Toggle">🎙️🔊</button>
+          <button id="bc" onclick="tCam()" title="Camera Toggle">📷</button>
+          <button onclick="tScr()" title="Screen Mirroring / Cast">🖥️</button>
+          <button style="background:var(--bad)" onclick="cancel()" title="End Call">📵</button>
+        </div>
+        <div class="glass" style="margin-top:10px">
+          <div id="msgs"></div>
+          <div class="row">
+            <input id="ci" placeholder="Message bhejein...">
+            <button style="flex:0 0 65px" class="pri" onclick="send()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incoming Call Modal -->
+    <div id="modal" class="hide">
+      <div class="glass" style="text-align:center;width:100%;max-width:340px">
+        <div style="font-size:42px">📞</div>
+        <h2 id="who" style="margin-top:8px"></h2>
+        <div class="mut" id="wt"></div>
+        <div class="row" style="margin-top:16px">
+          <button style="background:var(--bad)" onclick="decline()">❌ Decline</button>
+          <button style="background:var(--ok);color:#fff" onclick="accept()">✅ Answer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Settings Drawer -->
+    <div id="settingsDrawer" class="glass hide">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 style="margin:0">⚙️ Settings & Extra Features</h2>
+        <button style="padding:6px 12px" onclick="toggleSettings()">Band Karein</button>
+      </div>
+      <div class="mut" style="margin-bottom:10px">Aap yahan se permissions aur screen casting manage kar sakte hain.</div>
+      <button style="width:100%;margin-bottom:8px" onclick="askPermission('microphone')">🎙️ Microphone Permission Check</button>
+      <button style="width:100%;margin-bottom:8px" onclick="askPermission('camera')">📷 Camera Permission Check</button>
+      <button style="width:100%;background:rgba(236,72,153,0.2);border-color:#ec4899" onclick="tScr()">🖥️ Quick Screen Mirroring Start</button>
+    </div>
+
+    <script>
+    const $ = i => document.getElementById(i);
+    let pc, dc, loc = new MediaStream(),
+      rem = new MediaStream(),
+      offer = null,
+      camT = null,
+      scrT = null,
+      ringT = null,
+      ac;
+    let micMuted = false,
+      speakerOff = false;
+    const me = {
+      n: '',
+      i: ''
+    };
+
+    try {
+      me.n = localStorage.getItem('gc_n') || '';
+      me.i = localStorage.getItem('gc_i') || '';
+    } catch (e) {}
+    if (!me.i) {
+      me.i = String(Math.floor(100000 + Math.random() * 900000));
+      try {
+        localStorage.setItem('gc_i', me.i)
+      } catch (e) {}
+    }
+
+    $('myid').textContent = me.i.slice(0, 3) + ' ' + me.i.slice(3);
+    $('nm').value = me.n;
+    $('nm').oninput = e => {
+      me.n = e.target.value;
+      try {
+        localStorage.setItem('gc_n', me.n)
+      } catch (x) {}
+    };
+    $('ci').onkeydown = e => {
+      if (e.key === 'Enter') send();
+    };
+    $('rv').srcObject = rem;
+    $('lv').srcObject = loc;
+
+    function toast(t) {
+      const existing = document.getElementById('toast');
+      if (existing) existing.remove();
+      const d = document.createElement('div');
+      d.id = 'toast';
+      d.textContent = t;
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 4000);
+    }
+
+    function show(v) {
+      ['home', 'pair', 'call'].forEach(x => $(x).classList.toggle('hide', x !== v));
+    }
+
+    function toggleSettings() {
+      $('settingsDrawer').classList.toggle('hide');
+    }
+
+    /* --- Code Pack/Unpack --- */
+    const b64 = u => {
+      let s = '';
+      u.forEach(c => s += String.fromCharCode(c));
+      return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    };
+    const unb = t => {
+      t = t.replace(/-/g, '+').replace(/_/g, '/');
+      while (t.length % 4) t += '=';
+      return Uint8Array.from(atob(t), c => c.charCodeAt(0))
+    };
+    async function pack(o) {
+      const u = new TextEncoder().encode(JSON.stringify(o));
+      if (window.CompressionStream) {
+        const w = new CompressionStream('deflate-raw'),
+          x = w.writable.getWriter();
+        x.write(u);
+        x.close();
+        return 'GC2' + b64(new Uint8Array(await new Response(w.readable).arrayBuffer()))
+      }
+      return 'GC1' + b64(u)
+    }
+    async function unpack(t) {
+      const m = (t || '').replace(/\s+/g, '').match(/GC([12])([A-Za-z0-9_-]+)/);
+      if (!m) return null;
+      try {
+        let u = unb(m[2]);
+        if (m[1] === '2') {
+          const w = new DecompressionStream('deflate-raw'),
+            x = w.writable.getWriter();
+          x.write(u);
+          x.close();
+          u = new Uint8Array(await new Response(w.readable).arrayBuffer())
+        }
+        return JSON.parse(new TextDecoder().decode(u))
+      } catch (e) {
+        return null
+      }
+    }
+    async function pasteTo(id) {
+      try {
+        $(id).value = await navigator.clipboard.readText()
+      } catch (e) {
+        toast('Box par long-press karke paste karein')
+      }
+    }
+
+    /* --- Permissions --- */
+    async function askPermission(n) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia(n === 'camera' ? {
+          video: true
+        } : {
+          audio: true
+        });
+        s.getTracks().forEach(t => t.stop());
+        toast(n.toUpperCase() + ' allow ho gaya hai!');
+      } catch (e) {
+        toast('Permission nahi mili. HTTPS link use karein.');
+      }
+    }
+
+    /* --- Media & WebRTC --- */
+    async function media(type) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true
+          },
+          video: type === 'video' ? {
+            facingMode: 'user'
+          } : false
+        });
+        s.getTracks().forEach(t => {
+          loc.addTrack(t);
+          if (t.kind === 'video') camT = t
+        });
+        return true;
+      } catch (e) {
+        toast('Camera/Mic error. Check HTTPS connection.');
+        return false;
+      }
+    }
+
+    function mk() {
+      pc = new RTCPeerConnection({
+        iceServers: [{
+          urls: 'stun:stun.l.google.com:19302'
+        }]
+      });
+      pc.ontrack = e => rem.addTrack(e.track);
+      pc.ondatachannel = e => setDC(e.channel);
+      pc.onconnectionstatechange = () => {
+        const s = pc.connectionState;
+        if (s === 'connected') {
+          stopRing();
+          show('call');
+          $('st').textContent = '🟢 Connected';
+          $('rv').play().catch(() => {});
+        } else if (s === 'failed' || s === 'disconnected' || s === 'closed') {
+          $('st').textContent = '🔴 Disconnected';
+        }
+      }
+    }
+
+    function setDC(c) {
+      dc = c;
+      c.onmessage = e => add(e.data, 0)
+    }
+
+    function add(t, m) {
+      const d = document.createElement('div');
+      d.className = 'm' + (m ? ' me' : '');
+      d.textContent = t;
+      $('msgs').appendChild(d);
+      $('msgs').scrollTop = 1e9
+    }
+
+    function send() {
+      const v = $('ci').value.trim();
+      if (!v || !dc || dc.readyState !== 'open') return;
+      dc.send(v);
+      add(v, 1);
+      $('ci').value = ''
+    }
+
+    function gathered() {
+      return new Promise(r => {
+        if (pc.iceGatheringState === 'complete') return r();
+        pc.onicegatheringstatechange = () => pc.iceGatheringState === 'complete' && r();
+        setTimeout(r, 3000)
+      })
+    }
+
+    function put() {
+      for (const tr of pc.getTransceivers()) {
+        const k = tr.receiver.track.kind;
+        tr.direction = 'sendrecv';
+        tr.sender.replaceTrack(loc.getTracks().find(t => t.kind === k && t !== scrT) || null)
+      }
+    }
+
+    function showCode(title, ans) {
+      $('ptitle').textContent = title;
+      $('ansBox').classList.toggle('hide', !ans);
+      show('pair');
+      $('outCode').value = 'Code generate ho raha hai...';
+      $('shb').disabled = true
+    }
+
+    async function start(type) {
+      if (!await media(type)) return;
+      mk();
+      setDC(pc.createDataChannel('chat'));
+      pc.addTransceiver('audio', {
+        direction: 'sendrecv'
+      });
+      pc.addTransceiver('video', {
+        direction: 'sendrecv'
+      });
+      put();
+      await pc.setLocalDescription(await pc.createOffer());
+      showCode('Step 1: Yeh code apne dost ko bhejein', true);
+      await gathered();
+      $('outCode').value = await pack({
+        n: me.n || 'Host',
+        i: me.i,
+        t: type,
+        s: pc.localDescription.sdp,
+        k: 'o'
+      });
+      $('shb').disabled = false;
+    }
+
+    async function startMeeting() {
+      // Multi-user meeting initialization
+      if (!await media('video')) return;
+      mk();
+      setDC(pc.createDataChannel('chat'));
+      pc.addTransceiver('audio', {
+        direction: 'sendrecv'
+      });
+      pc.addTransceiver('video', {
+        direction: 'sendrecv'
+      });
+      put();
+      await pc.setLocalDescription(await pc.createOffer());
+      showCode('🚀 Meeting Room Code (Share with upto 5 participants)', true);
+      await gathered();
+      $('outCode').value = await pack({
+        n: me.n || 'Meeting Host',
+        i: me.i,
+        t: 'video',
+        s: pc.localDescription.sdp,
+        k: 'meeting'
+      });
+      $('shb').disabled = false;
+    }
+
+    async function connect() {
+      const d = await unpack($('ansIn').value);
+      if (!d) return toast('Invalid code! Sahi reply code dalein.');
+      try {
+        await pc.setRemoteDescription({
+          type: 'answer',
+          sdp: d.s
+        });
+        toast('Connect ho raha hai...');
+      } catch (e) {
+        toast('Connection fail ho gaya.');
+      }
+    }
+
+    async function incoming() {
+      const d = await unpack($('inCode').value);
+      if (!d) return toast('Invalid code!');
+      offer = d;
+      $('who').textContent = d.n + ' (ID ' + d.i + ')';
+      $('wt').textContent = d.k === 'meeting' ? '👥 Group Meeting Invitation...' : 'Incoming Call...';
+      $('modal').classList.remove('hide');
+    }
+
+    function decline() {
+      $('modal').classList.add('hide');
+      offer = null;
+    }
+
+    async function accept() {
+      $('modal').classList.add('hide');
+      if (!await media(offer.t)) return;
+      mk();
+      try {
+        await pc.setRemoteDescription({
+          type: 'offer',
+          sdp: offer.s
+        });
+      } catch (e) {
+        return toast('Invalid code.');
+      }
+      put();
+      await pc.setLocalDescription(await pc.createAnswer());
+      showCode('Yeh reply code wapas bhejein', false);
+      await gathered();
+      $('outCode').value = await pack({
+        n: me.n || 'Guest',
+        i: me.i,
+        s: pc.localDescription.sdp,
+        k: 'a'
+      });
+      $('shb').disabled = false;
+    }
+
+    async function share() {
+      const t = $('outCode').value;
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            text: t
+          });
+          return;
+        }
+      } catch (e) {}
+      try {
+        await navigator.clipboard.writeText(t);
+        toast('Code copy ho gaya!');
+      } catch (e) {
+        $('outCode').select();
+      }
+    }
+
+    function cancel() {
+      try {
+        pc && pc.close();
+      } catch (e) {}
+      loc.getTracks().forEach(t => {
+        t.stop();
+        loc.removeTrack(t)
+      });
+      rem.getTracks().forEach(t => rem.removeTrack(t));
+      camT = scrT = null;
+      pc = dc = null;
+      $('msgs').innerHTML = '';
+      show('home');
+    }
+
+    /* --- Unified Mic & Speaker Toggle Button --- */
+    function tAudio() {
+      const aud = loc.getAudioTracks()[0];
+      if (!aud && !rem.getAudioTracks()[0]) return toast('Audio track available nahi hai.');
+
+      if (!micMuted) {
+        // Step 1: Mute Mic
+        if (aud) aud.enabled = false;
+        micMuted = true;
+        toast('Mic Mute ho gaya 🔇');
+        $('bm').textContent = '🔇🔊';
+      } else if (!speakerOff) {
+        // Step 2: Unmute Mic, Mute Speaker (Route to earpiece / mute remote)
+        if (aud) aud.enabled = true;
+        micMuted = false;
+        speakerOff = true;
+        rem.getAudioTracks().forEach(t => t.enabled = false);
+        toast('Speaker Off (Normal Call Mode) 🔊❌');
+        $('bm').textContent = '🎙️❌';
+      } else {
+        // Step 3: Unmute Both (Normal Speaker & Mic On)
+        speakerOff = false;
+        rem.getAudioTracks().forEach(t => t.enabled = true);
+        toast('Speaker & Mic On 🎙️🔊');
+        $('bm').textContent = '🎙️🔊';
+      }
+    }
+
+    async function tCam() {
+      if (camT) {
+        camT.enabled = !camT.enabled;
+        $('bc').textContent = camT.enabled ? '📷' : '🚫';
+        return;
+      }
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user'
+          }
+        });
+        camT = s.getVideoTracks()[0];
+        loc.addTrack(camT);
+        pc.getTransceivers().find(t => t.receiver.track.kind === 'video').sender.replaceTrack(camT);
+      } catch (e) {
+        toast('Camera error.');
+      }
+    }
+
+    /* --- Screen Mirroring / Cast Option --- */
+    async function tScr() {
+      const v = pc && pc.getTransceivers().find(t => t.receiver.track.kind === 'video');
+      if (!v) return toast('Pehle call connect karein phir screen share karein.');
+      if (scrT) {
+        scrT.stop();
+        endScr();
+        return;
+      }
+      if (!navigator.mediaDevices.getDisplayMedia) return toast('Screen sharing mobile browsers par support nahi karti.');
+      try {
+        const s = await navigator.mediaDevices.getDisplayMedia({
+          video: true
+        });
+        scrT = s.getVideoTracks()[0];
+        v.sender.replaceTrack(scrT);
+        loc.addTrack(scrT);
+        scrT.onended = endScr;
+        toast('Screen Mirroring / Cast shuru ho gaya hai 🖥️');
+        if (!$('settingsDrawer').classList.contains('hide')) toggleSettings();
+      } catch (e) {}
+    }
+
+    function endScr() {
+      if (!scrT) return;
+      loc.removeTrack(scrT);
+      scrT = null;
+      pc.getTransceivers().find(t => t.receiver.track.kind === 'video').sender.replaceTrack(camT || null);
+    }
+
+    function stopRing() {
+      if (ringT) {
+        clearInterval(ringT);
+        ringT = null;
+      }
+    }
+
+    show('home');
+
+    </script>
+  </body>
+
+</html>
